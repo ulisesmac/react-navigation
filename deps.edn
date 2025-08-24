@@ -1,0 +1,8 @@
+{:paths ["src"]
+ :deps  {org.clojure/clojurescript                      {:mvn/version "1.12.42"}
+         applied-science/js-interop                     {:mvn/version "0.4.2"}
+         reagent/reagent                                {:mvn/version "1.3.0"}
+         com.github.ulisesmac/reagent-extended-compiler {:local/root "../reagent-extended-compiler"}}
+ :aliases
+ {:test {:extra-paths ["test"]
+         :main-opts   ["-m" "cljs-test-runner.main"]}}}

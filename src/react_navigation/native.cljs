@@ -5,7 +5,8 @@
                                        createStaticNavigator
                                        createNavigationContainerRef
                                        useNavigation
-                                       StackActions]]
+                                       StackActions
+                                       useFocusEffect]]
    [applied-science.js-interop :as j]
    [reagent.core :as r]))
 
@@ -27,3 +28,5 @@
 (def stack-actions StackActions)
 
 (def common-actions CommonActions)
+
+(def use-focus-effect useFocusEffect)

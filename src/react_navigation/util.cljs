@@ -1,6 +1,11 @@
 (ns react-navigation.util
   (:require [reagent.core :as r]))
 
+(defonce react-native-build-error (atom nil))
+
+(defn ^:dev/before-load clear-error! []
+  (reset! react-native-build-error nil))
+
 (defn error-boundary [_child]
   (let [error? (r/atom false)
         info   (r/atom nil)]
@@ -8,7 +13,9 @@
      {:display-name                 "ErrorBoundary"
       :component-did-catch          (fn [this error error-info]
                                       (reset! info {:error      error
-                                                    :error-info error-info}))
+                                                    :error-info error-info})
+                                      (reset! react-native-build-error {:error      error
+                                                                        :error-info error-info}))
       :get-derived-state-from-error (fn [e]
                                       (reset! error? true)
                                       #js{})

@@ -9,4 +9,4 @@
 *.iml
 /.DS_Store
 /target/
-
+/.clj-kondo/

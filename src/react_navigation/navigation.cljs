@@ -78,6 +78,19 @@
 (defn go-back! []
   (j/call navigation-ref :dispatch (j/call common-actions :goBack)))
 
+(defn push!
+  ([route]
+   (push! route nil))
+  ([route params]
+   (if (ready?)
+     (let [js-route-name (name route)
+           push-action   (j/call stack-actions :push
+                                 js-route-name
+                                 #js{:isCljEncoded true
+                                     :cljData      (prn-str params)})]
+       (j/call navigation-ref :dispatch push-action))
+     (js/console.error "NAVIGATION IS NOT READY!"))))
+
 
 ;; TODO: add reset-root! funciton
 

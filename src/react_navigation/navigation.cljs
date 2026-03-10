@@ -91,6 +91,19 @@
        (j/call navigation-ref :dispatch push-action))
      (js/console.error "NAVIGATION IS NOT READY!"))))
 
+(defn replace!
+  ([route]
+   (replace! route nil))
+  ([route params]
+   (if (ready?)
+     (let [js-route-name  (name route)
+           replace-action (j/call stack-actions :replace
+                                  js-route-name
+                                  #js{:isCljEncoded true
+                                      :cljData      (prn-str params)})]
+       (j/call navigation-ref :dispatch replace-action))
+     (js/console.error "NAVIGATION IS NOT READY!"))))
+
 
 ;; TODO: add reset-root! funciton
 

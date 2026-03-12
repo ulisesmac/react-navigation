@@ -67,7 +67,7 @@
                                   #js{:name (name route-data)}
                                   #js{:name   (-> route-data :name name)
                                       :params #js{:isCljEncoded true
-                                                  :cljData      (prn-str (-> route-data :params))}})))
+                                                  :cljData      (-> route-data :params prn-str)}})))
                          (to-array))]
       (j/call navigation-ref
               :resetRoot #js{:index  index

@@ -1,10 +1,7 @@
 (ns react-navigation.navigation
   (:require
    [applied-science.js-interop :as j]
-   [react-navigation.native :refer [create-navigation-container-ref
-                                    create-static-navigation
-                                    common-actions
-                                    stack-actions]]))
+   [react-navigation.native :refer [create-navigation-container-ref common-actions stack-actions]]))
 
 (defonce navigation-ref (create-navigation-container-ref))
 

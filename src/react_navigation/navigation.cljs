@@ -10,6 +10,12 @@
                         (j/call-in [:current :getCurrentRoute])
                         (j/get :name))))
 
+(defn ->js-nav-params [params]
+  (-> params
+      (update-keys prn-str)
+      (update-vals prn-str)
+      clj->js))
+
 (defn- ready? []
   (j/call navigation-ref :isReady))
 
@@ -20,8 +26,7 @@
    (if (ready?)
      (let [js-route-name (name route)]
        ;; TODO: check if instead a ref/var should be passed
-       (j/call navigation-ref :navigate js-route-name #js{:isCljEncoded true
-                                                          :cljData      (prn-str params)}))
+       (j/call navigation-ref :navigate js-route-name (->js-nav-params params)))
      (js/console.error "NAVIGATION IS NOT READY!")))
   ([navigator route params]
    (if (ready?)
@@ -29,7 +34,7 @@
            js-route-name  (name route)]
        ;; TODO: check if instead a ref/var should be passed
        (j/call navigation-ref :navigate navigator-name #js{:screen js-route-name
-                                                           :params #js{:cljData (prn-str params)}}))
+                                                           :params (->js-nav-params params)}))
      (js/console.error "NAVIGATION IS NOT READY!")))
   )
 
@@ -39,10 +44,7 @@
   ([route params]
    (if (ready?)
      (let [js-route-name (name route)
-           pop-to-action (j/call stack-actions :popTo
-                                 js-route-name
-                                 #js{:isCljEncoded true
-                                     :cljDataBack  (prn-str params)}
+           pop-to-action (j/call stack-actions :popTo js-route-name (->js-nav-params params)
                                  #js{:merge true})]
        (j/call navigation-ref :dispatch pop-to-action))
      (js/console.error "NAVIGATION IS NOT READY!"))))
@@ -53,8 +55,14 @@
   ([route params]
    (if (ready?)
      (let [js-route-name (name route)]
-       (j/call common-actions :preload js-route-name #js{:cljData (prn-str params)}))
+       (j/call common-actions :preload js-route-name (->js-nav-params params)))
      (js/console.error "NAVIGATION IS NOT READY!"))))
+
+(defn set-params! [params]
+  (if (ready?)
+    (j/call navigation-ref :dispatch
+            (j/call common-actions :setParams (->js-nav-params params)))
+    (js/console.error "NAVIGATION IS NOT READY!")))
 
 (defn reset-root! [index routes]
   (if (ready?)
@@ -63,12 +71,10 @@
                                 (if (keyword? route-data)
                                   #js{:name (name route-data)}
                                   #js{:name   (-> route-data :name name)
-                                      :params #js{:isCljEncoded true
-                                                  :cljData      (-> route-data :params prn-str)}})))
+                                      :params (->js-nav-params (:params route-data))})))
                          (to-array))]
-      (j/call navigation-ref
-              :resetRoot #js{:index  index
-                             :routes js-routes})
+      (j/call navigation-ref :resetRoot #js{:index  index
+                                            :routes js-routes})
       js-routes)
     (js/console.error "NAVIGATION IS NOT READY!")))
 
@@ -81,10 +87,7 @@
   ([route params]
    (if (ready?)
      (let [js-route-name (name route)
-           push-action   (j/call stack-actions :push
-                                 js-route-name
-                                 #js{:isCljEncoded true
-                                     :cljData      (prn-str params)})]
+           push-action   (j/call stack-actions :push js-route-name (->js-nav-params params))]
        (j/call navigation-ref :dispatch push-action))
      (js/console.error "NAVIGATION IS NOT READY!"))))
 
@@ -94,10 +97,7 @@
   ([route params]
    (if (ready?)
      (let [js-route-name  (name route)
-           replace-action (j/call stack-actions :replace
-                                  js-route-name
-                                  #js{:isCljEncoded true
-                                      :cljData      (prn-str params)})]
+           replace-action (j/call stack-actions :replace js-route-name (->js-nav-params params))]
        (j/call navigation-ref :dispatch replace-action))
      (js/console.error "NAVIGATION IS NOT READY!"))))
 

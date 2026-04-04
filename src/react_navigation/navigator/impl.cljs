@@ -13,15 +13,16 @@
   (swap! reload-counter inc))
 
 (defn- component-wrapper [params reagent-comp-screen display-name error-boundary]
-  (let [js-params   (.-params ^js (:route params))
-        ;; TODO: optimize transformation of nil values
-        push-params (some-> js-params ^String .-cljData cljs.reader/read-string)
-        pop-params  (some-> js-params ^String .-cljDataBack cljs.reader/read-string)]
+  (let [params (some-> ^js (:route params)
+                 .-params
+                 js->clj
+                 (update-keys cljs.reader/read-string)
+                 (update-vals cljs.reader/read-string))]
     (with-meta
      [error-boundary
       [reagent-comp-screen {:navigation   {:pop-to   nav/pop-to!
                                            :navigate nav/navigate!}
-                            :route-params (merge push-params pop-params)}]]
+                            :route-params params}]]
      {:key (str display-name "-" @reload-counter)})))
 
 (defn- reactify-screen [screen-kw screen error-boundary]

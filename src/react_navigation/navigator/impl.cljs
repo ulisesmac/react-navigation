@@ -4,6 +4,7 @@
    [cljs.reader]
    [react-navigation.navigation :as nav]
    [react-navigation.util :as util]
+   [reagent-extended-compiler.utils.transforms :as transforms]
    [reagent.core :as r]))
 
 ;; Hot reload settings for development
@@ -48,7 +49,14 @@
                                               (reactify-screen screen-kw screen error-boundary)
 
                                               (and (map? screen) (fn? (:screen screen)))
-                                              (reactify-screen screen-kw (:screen screen) error-boundary)
+                                              (-> screen
+                                                  (update :screen
+                                                          (fn [screen-component]
+                                                            (reactify-screen
+                                                             screen-kw
+                                                             screen-component
+                                                             error-boundary)))
+                                                  transforms/->js-prop-obj)
 
                                               :else
                                               screen)))

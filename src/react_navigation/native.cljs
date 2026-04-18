@@ -6,7 +6,8 @@
                                        createNavigationContainerRef
                                        useNavigation
                                        StackActions
-                                       useFocusEffect]]
+                                       useFocusEffect
+                                       usePreventRemove]]
    [applied-science.js-interop :as j]
    [reagent.core :as r]))
 
@@ -30,3 +31,4 @@
 (def common-actions CommonActions)
 
 (def use-focus-effect useFocusEffect)
+(def use-prevent-remove usePreventRemove)

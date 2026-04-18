@@ -78,6 +78,25 @@
       js-routes)
     (js/console.error "NAVIGATION IS NOT READY!")))
 
+(defn reset-to-root-and-open!
+  ([route]
+   (reset-to-root-and-open! route nil))
+  ([route params]
+   (if (ready?)
+     (let [root-state  (j/call navigation-ref :getRootState)
+           root-routes (j/get root-state :routes)
+           root-route  (when root-routes
+                         (aget root-routes 0))]
+       (if root-route
+         (j/call navigation-ref
+                 :resetRoot
+                 #js{:index  1
+                     :routes (array root-route
+                                    #js{:name   (name route)
+                                        :params (->js-nav-params params)})})
+         (js/console.error "NAVIGATION ROOT ROUTE NOT FOUND!")))
+     (js/console.error "NAVIGATION IS NOT READY!"))))
+
 (defn go-back! []
   (j/call navigation-ref :dispatch (j/call common-actions :goBack)))
 

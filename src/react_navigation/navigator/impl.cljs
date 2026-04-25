@@ -2,7 +2,6 @@
   (:require
    [applied-science.js-interop :as j]
    [cljs.reader]
-   [react-navigation.navigation :as nav]
    [react-navigation.util :as util]
    [reagent-extended-compiler.utils.transforms :as transforms]
    [reagent.core :as r]))
@@ -13,17 +12,15 @@
 (defn update-counter {:dev/after-load true} []
   (swap! reload-counter inc))
 
-(defn- component-wrapper [params reagent-comp-screen display-name error-boundary]
-  (let [params (some-> ^js (:route params)
-                 .-params
-                 js->clj
-                 (update-keys cljs.reader/read-string)
-                 (update-vals cljs.reader/read-string))]
+(defn- component-wrapper [props reagent-comp-screen display-name error-boundary]
+  (let [route-params (some-> ^js (:route props)
+                            .-params
+                            js->clj
+                            (update-keys cljs.reader/read-string)
+                            (update-vals cljs.reader/read-string))]
     (with-meta
      [error-boundary
-      [reagent-comp-screen {:navigation   {:pop-to   nav/pop-to!
-                                           :navigate nav/navigate!}
-                            :route-params params}]]
+      [reagent-comp-screen {:route-params route-params}]]
      {:key (str display-name "-" @reload-counter)})))
 
 (defn- reactify-screen [screen-kw screen error-boundary]

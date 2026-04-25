@@ -1,7 +1,39 @@
 (ns react-navigation.util
-  (:require [reagent.core :as r]))
+  (:require
+   [applied-science.js-interop :as j]
+   [reagent.core :as r]))
 
 (defonce react-native-build-error (atom nil))
+
+(declare rehydratable-state)
+
+(defn- rehydratable-copy [obj]
+  (doto (js/Object.assign #js{} obj)
+    (js-delete "key")
+    (js-delete "stale")
+    (js-delete "routeNames")
+    (js-delete "preloadedRoutes")))
+
+(defn- rehydratable-route [route]
+  (let [route-copy   (rehydratable-copy route)
+        route-state  (j/get route-copy :state)
+        route-params (j/get route-copy :params)]
+    (when route-state
+      (j/assoc! route-copy :state (rehydratable-state route-state))
+      (when (j/get route-params :screen)
+        (js-delete route-copy "params")))
+    route-copy))
+
+(defn rehydratable-state [state]
+  (when state
+    (let [state-copy (rehydratable-copy state)]
+      (when-let [routes (j/get state-copy :routes)]
+        (->> routes
+             array-seq
+             (map rehydratable-route)
+             into-array
+             (j/assoc! state-copy :routes)))
+      state-copy)))
 
 (defn ^:dev/before-load clear-error! []
   (reset! react-native-build-error nil))

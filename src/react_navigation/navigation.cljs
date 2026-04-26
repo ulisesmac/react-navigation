@@ -49,6 +49,18 @@
        (j/call navigation-ref :dispatch pop-to-action))
      (js/console.error "NAVIGATION IS NOT READY!"))))
 
+(defn pop-to-target!
+  ([target route]
+   (pop-to-target! target route nil))
+  ([target route params]
+   (if (ready?)
+     (let [js-route-name (name route)
+           pop-to-action (j/call stack-actions :popTo js-route-name (->js-nav-params params)
+                                 #js{:merge true})]
+       (j/assoc! pop-to-action :target target)
+       (j/call navigation-ref :dispatch pop-to-action))
+     (js/console.error "NAVIGATION IS NOT READY!"))))
+
 (defn preload!
   ([route]
    (preload! route nil))

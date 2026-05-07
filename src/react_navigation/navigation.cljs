@@ -65,6 +65,19 @@
            pop-to-action (j/call stack-actions :popTo js-route-name (->js-nav-params params)
                                  #js{:merge true})]
        (j/call navigation-ref :dispatch pop-to-action))
+     (js/console.error "NAVIGATION IS NOT READY!")))
+  ([navigator route params]
+   (if (ready?)
+     (let [js-navigator-name (name navigator)
+           js-route-name     (name route)
+           pop-to-action     (j/call stack-actions
+                                      :popTo
+                                      js-navigator-name
+                                      #js{:screen js-route-name
+                                          :params (->js-nav-params params)
+                                          :merge  true}
+                                      #js{:merge true})]
+       (j/call navigation-ref :dispatch pop-to-action))
      (js/console.error "NAVIGATION IS NOT READY!"))))
 
 (defn pop-to-target!

@@ -107,14 +107,23 @@
             (j/call common-actions :setParams (->js-nav-params params)))
     (js/console.error "NAVIGATION IS NOT READY!")))
 
+(defn ->js-nav-route [route-data]
+  (if (keyword? route-data)
+    #js{:name (name route-data)}
+    (let [js-route #js{:name (-> route-data :name name)}]
+      (when-let [params (:params route-data)]
+        (j/assoc! js-route :params (->js-nav-params params)))
+      js-route)))
+
+(defn reset-root-state! [state]
+  (if (ready?)
+    (j/call navigation-ref :resetRoot state)
+    (js/console.error "NAVIGATION IS NOT READY!")))
+
 (defn reset-root! [index routes]
   (if (ready?)
     (let [js-routes (->> routes
-                         (map (fn [route-data]
-                                (if (keyword? route-data)
-                                  #js{:name (name route-data)}
-                                  #js{:name   (-> route-data :name name)
-                                      :params (->js-nav-params (:params route-data))})))
+                         (map ->js-nav-route)
                          (to-array))]
       (j/call navigation-ref :resetRoot #js{:index  index
                                             :routes js-routes})
@@ -140,8 +149,25 @@
          (js/console.error "NAVIGATION ROOT ROUTE NOT FOUND!")))
      (js/console.error "NAVIGATION IS NOT READY!"))))
 
-(defn go-back! []
-  (j/call navigation-ref :dispatch (j/call common-actions :goBack)))
+(defn- navigator-state-key [state route-name]
+  (when-let [routes (j/get state :routes)]
+    (some (fn [route]
+            (or (when (= route-name (j/get route :name))
+                  (j/get-in route [:state :key]))
+                (when-let [child-state (j/get route :state)]
+                  (navigator-state-key child-state route-name))))
+          (array-seq routes))))
+
+(defn go-back!
+  ([]
+   (j/call navigation-ref :dispatch (j/call common-actions :goBack)))
+  ([navigator]
+   (if-let [target (navigator-state-key (j/call navigation-ref :getRootState)
+                                        (name navigator))]
+     (let [go-back-action (j/call common-actions :goBack)]
+       (j/assoc! go-back-action :target target)
+       (j/call navigation-ref :dispatch go-back-action))
+     (js/console.error "NAVIGATION TARGET NOT FOUND!" (name navigator)))))
 
 (defn push!
   ([route]
@@ -151,6 +177,15 @@
      (let [js-route-name (name route)
            push-action   (j/call stack-actions :push js-route-name (->js-nav-params params))]
        (j/call navigation-ref :dispatch push-action))
+     (js/console.error "NAVIGATION IS NOT READY!")))
+  ([navigator route params]
+   (if (ready?)
+     (if-let [target (navigator-state-key (j/call navigation-ref :getRootState)
+                                          (name navigator))]
+       (let [push-action (j/call stack-actions :push (name route) (->js-nav-params params))]
+         (j/assoc! push-action :target target)
+         (j/call navigation-ref :dispatch push-action))
+       (js/console.error "NAVIGATION TARGET NOT FOUND!" (name navigator)))
      (js/console.error "NAVIGATION IS NOT READY!"))))
 
 (defn replace!

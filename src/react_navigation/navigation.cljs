@@ -2,7 +2,9 @@
   (:require
    [applied-science.js-interop :as j]
    [cljs.reader]
-   [react-navigation.native :refer [common-actions create-navigation-container-ref stack-actions]]))
+   [react-navigation.native :refer [common-actions create-navigation-container-ref stack-actions]]
+   [reagent-extended-compiler.utils.transforms :as xf]
+   [reagent.core :as r]))
 
 (defonce navigation-ref (create-navigation-container-ref))
 
@@ -22,6 +24,15 @@
           js->clj
           (update-keys cljs.reader/read-string)
           (update-vals cljs.reader/read-string)))
+
+(defn true-sheet-parts [{:keys [header footer]}]
+  (fn [props]
+    (let [route (j/lookup (j/get props :route))
+          props {:route        {:key  (:key route)
+                                :name (:name route)}
+                 :route-params (->clj-nav-params (:params route))}]
+      (xf/->js-prop-obj {:header (r/as-element [header props])
+                         :footer (r/as-element [footer props])}))))
 
 (defn- ready? []
   (j/call navigation-ref :isReady))

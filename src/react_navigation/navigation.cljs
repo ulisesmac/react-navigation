@@ -25,14 +25,16 @@
           (update-keys cljs.reader/read-string)
           (update-vals cljs.reader/read-string)))
 
-(defn true-sheet-parts [{:keys [header footer]}]
+(defn true-sheet-parts [{:keys [header footer] :as options}]
   (fn [props]
     (let [route (j/lookup (j/get props :route))
           props {:route        {:key  (:key route)
                                 :name (:name route)}
                  :route-params (->clj-nav-params (:params route))}]
-      (xf/->js-prop-obj {:header (r/as-element [header props])
-                         :footer (r/as-element [footer props])}))))
+      (-> options
+          (assoc :header (r/as-element [header props])
+                 :footer (r/as-element [footer props]))
+          (xf/->js-prop-obj)))))
 
 (defn- ->js-nested-nav-params [routes params]
   (reduce (fn [child route]
@@ -172,12 +174,15 @@
   ([]
    (j/call navigation-ref :dispatch (j/call common-actions :goBack)))
   ([navigator]
-   (if-let [target (navigator-state-key (j/call navigation-ref :getRootState)
-                                        (name navigator))]
-     (let [go-back-action (j/call common-actions :goBack)]
-       (j/assoc! go-back-action :target target)
-       (j/call navigation-ref :dispatch go-back-action))
-     (js/console.error "NAVIGATION TARGET NOT FOUND!" (name navigator)))))
+   (if (keyword? navigator)
+     (let [route-name (name navigator)]
+       (if-let [target (navigator-state-key (j/call navigation-ref :getRootState)
+                                            route-name)]
+         (let [go-back-action (j/call common-actions :goBack)]
+           (j/assoc! go-back-action :target target)
+           (j/call navigation-ref :dispatch go-back-action))
+         (js/console.error "NAVIGATION TARGET NOT FOUND!" route-name)))
+     (go-back!))))
 
 (defn push!
   ([route]

@@ -34,6 +34,14 @@
       (xf/->js-prop-obj {:header (r/as-element [header props])
                          :footer (r/as-element [footer props])}))))
 
+(defn- ->js-nested-nav-params [routes params]
+  (reduce (fn [child route]
+            #js{:screen (name route)
+                :params child
+                :merge  true})
+          (->js-nav-params params)
+          (reverse routes)))
+
 (defn- ready? []
   (j/call navigation-ref :isReady))
 
@@ -69,13 +77,15 @@
   ([navigator route params]
    (if (ready?)
      (let [js-navigator-name (name navigator)
-           js-route-name     (name route)
+           route-params      (if (sequential? route)
+                               (->js-nested-nav-params route params)
+                               #js{:screen (name route)
+                                   :params (->js-nav-params params)
+                                   :merge  true})
            pop-to-action     (j/call stack-actions
                                       :popTo
                                       js-navigator-name
-                                      #js{:screen js-route-name
-                                          :params (->js-nav-params params)
-                                          :merge  true}
+                                      route-params
                                       #js{:merge true})]
        (j/call navigation-ref :dispatch pop-to-action))
      (js/console.error "NAVIGATION IS NOT READY!"))))

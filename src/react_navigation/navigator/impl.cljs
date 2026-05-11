@@ -1,7 +1,7 @@
 (ns react-navigation.navigator.impl
   (:require
    [applied-science.js-interop :as j]
-   [cljs.reader]
+   [react-navigation.navigation :as nav]
    [react-navigation.util :as util]
    [reagent-extended-compiler.utils.transforms :as transforms]
    [reagent.core :as r]))
@@ -13,11 +13,7 @@
   (swap! reload-counter inc))
 
 (defn- component-wrapper [props reagent-comp-screen display-name error-boundary]
-  (let [route-params (some-> ^js (:route props)
-                            .-params
-                            js->clj
-                            (update-keys cljs.reader/read-string)
-                            (update-vals cljs.reader/read-string))]
+  (let [route-params (nav/->clj-nav-params (some-> ^js (:route props) .-params))]
     (with-meta
      [error-boundary
       [reagent-comp-screen {:route-params route-params}]]

@@ -1,7 +1,8 @@
 (ns react-navigation.navigation
   (:require
    [applied-science.js-interop :as j]
-   [react-navigation.native :refer [create-navigation-container-ref common-actions stack-actions]]))
+   [cljs.reader]
+   [react-navigation.native :refer [common-actions create-navigation-container-ref stack-actions]]))
 
 (defonce navigation-ref (create-navigation-container-ref))
 
@@ -15,6 +16,12 @@
       (update-keys prn-str)
       (update-vals prn-str)
       clj->js))
+
+(defn ->clj-nav-params [params]
+  (some-> params
+          js->clj
+          (update-keys cljs.reader/read-string)
+          (update-vals cljs.reader/read-string)))
 
 (defn- ready? []
   (j/call navigation-ref :isReady))

@@ -5,6 +5,7 @@
                                        createStaticNavigator
                                        createNavigationContainerRef
                                        useNavigation
+                                       useRoute
                                        StackActions
                                        useFocusEffect
                                        usePreventRemove]]
@@ -12,6 +13,11 @@
    [reagent.core :as r]))
 
 (def create-navigation-container-ref createNavigationContainerRef)
+
+(def use-route useRoute)
+
+(defn use-route-key []
+  (j/get (useRoute) :key))
 
 (defn use-navigation []
   (let [js-nav-functions (useNavigation)]
